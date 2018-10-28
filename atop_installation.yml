@@ -1,0 +1,51 @@
+---
+- name: install atop on all
+  hosts: all
+  ignore_errors: true
+  tasks:
+    - name: install epel
+      when: ansible_os_family == "RedHat"
+      package:
+        name: epel-release
+ 
+    - name: install atop
+      when: ansible_os_family == "RedHat"
+      package:
+        name: atop
+
+    - name: install atop on ubuntu
+      when: ansible_os_family == "debian"
+      package:
+        name: atop
+
+    - name: run atop on ubuntu daily
+      when: ansible_os_family == "debian"
+      shell: "sed 's/600/60/' /etc/atop/atop.daily -i"
+
+    - name: run atop every minute 
+      when: 
+        - ( 'ansible_os_family  == "RedHat" and ansible_distribution_major_version "6"' )
+        - ( 'ansible_os_family  == "RedHat" and ansible_distribution_major_version "7"' )
+      shell: "sed 's/600/60/' /etc/atop/atop.daily -i"
+
+    - name: start atop on redhat 6
+      when: ( 'ansible_os_family  == "RedHat" and ansible_distribution_major_version "6"' )
+      systemd:
+        name: atop
+        state: started
+        enable: yes
+
+    - name: start atop on redhat 7
+      when: ( 'ansible_os_family  == "RedHat" and ansible_distribution_major_version "7"' )
+      systemd:
+        name: atop
+        state: started
+        enable: yes
+
+    - name: start atop on ubunto
+      when: ( ansible_os_family  == "debian" ) 
+      systemd:
+        name: atop
+        state: started
+        enable: yes
+
